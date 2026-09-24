@@ -113,6 +113,67 @@ namespace NeoFotonCommon
             return "NO_NEXT";
         }
 
+        public string CompressFilesPreview(
+            List<string> filePaths,
+            int quality,
+            ref string compression,
+            bool fixedHeight,
+            int dimension,
+            decimal fileSize,
+            SupportedMimeType type,
+            List<string> previewedImages,
+            bool? next)
+        {
+            if (filePaths == null || filePaths.Count == 0) return "";
+
+            string saveDirPath = Helper.AddDirectorySeparatorAtEnd(Path.GetTempPath())
+                + "MassImageCompressor300889D794E649e896387D28A2EB5836";
+
+            if ((next == null || !next.Value) && previewedImages.Count > 0)
+            {
+                string fileToPreview;
+                if (next == null)
+                    fileToPreview = previewedImages[previewedImages.Count - 1];
+                else if (previewedImages.Count > 1)
+                {
+                    fileToPreview = previewedImages[previewedImages.Count - 2];
+                    previewedImages.RemoveAt(previewedImages.Count - 1);
+                }
+                else
+                    return "NO_PREV";
+
+                return PreviewSave(
+                    fileToPreview,
+                    Helper.ChangeExensionToMimeType(Helper.AddDirectorySeparatorAtEnd(saveDirPath) + Path.GetFileName(fileToPreview), type),
+                    quality,
+                    ref compression,
+                    fixedHeight,
+                    dimension,
+                    type);
+            }
+
+            if (!Directory.Exists(saveDirPath))
+                Directory.CreateDirectory(saveDirPath);
+
+            foreach (string file in filePaths)
+            {
+                if (!File.Exists(file) || previewedImages.Contains(file) || !Helper.IsSupportedImage(file) || new FileInfo(file).Length < fileSize)
+                    continue;
+
+                previewedImages.Add(file);
+                return PreviewSave(
+                    file,
+                    Helper.ChangeExensionToMimeType(Helper.AddDirectorySeparatorAtEnd(saveDirPath) + Path.GetFileName(file), type),
+                    quality,
+                    ref compression,
+                    fixedHeight,
+                    dimension,
+                    type);
+            }
+
+            return "NO_NEXT";
+        }
+
         public int CompressDirectory(
             string openPath,
             string savePath,

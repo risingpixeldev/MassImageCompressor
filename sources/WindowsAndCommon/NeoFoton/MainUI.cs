@@ -27,6 +27,8 @@ namespace NeoFoton
 
         public string InputDirPath { get; set; }
 
+        public List<string> PreviewFilePaths { get; set; }
+
         public int QualityCompression { get; set; }
 
         public bool FixedHeight { get; set; }
@@ -177,6 +179,12 @@ namespace NeoFoton
                     return;
                 }
                 this.InputDirPath = txtOpen.Text;
+                this.PreviewFilePaths = droppedItems
+                    .Where(File.Exists)
+                    .Concat(droppedItems.Where(Directory.Exists).SelectMany(dir => Directory.GetFiles(dir, "*", chkCompressAll.Checked ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)))
+                    .Where(Helper.IsSupportedImage)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
                 this.OutputDirPath = txtSave.Text;
                 this.QualityCompression = trkCompress.Value;
                 this.FixedHeight = !rbSizePercentage.Checked;

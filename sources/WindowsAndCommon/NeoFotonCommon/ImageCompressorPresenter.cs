@@ -15,8 +15,8 @@ namespace NeoFotonCommon
 		{
 			string message = string.Empty;
 			string opImagePath 
-				= imgCompressorLogic.CompressDirectoryPreview(
-							View.InputDirPath,
+				= imgCompressorLogic.CompressFilesPreview(
+							View.PreviewFilePaths,
 							View.QualityCompression,
 							ref message,
 							View.FixedHeight,

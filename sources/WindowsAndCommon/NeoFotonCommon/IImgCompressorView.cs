@@ -18,6 +18,8 @@ namespace NeoFotonCommon
 
 		string InputDirPath { get; set; }
 
+        List<string> PreviewFilePaths { get; set; }
+
 		int QualityCompression { get; set; }
 
 		bool FixedHeight { get; set; }
