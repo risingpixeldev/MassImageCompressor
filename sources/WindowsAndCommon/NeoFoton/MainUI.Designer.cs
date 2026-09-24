@@ -328,7 +328,7 @@ namespace NeoFoton
             this.numtxtSize.Size = new System.Drawing.Size(42, 20);
             this.numtxtSize.TabIndex = 6;
             this.numtxtSize.Value = new decimal(new int[] {
-            70,
+            100,
             0,
             0,
             0});
@@ -344,7 +344,7 @@ namespace NeoFoton
             this.trkSize.Size = new System.Drawing.Size(143, 45);
             this.trkSize.TabIndex = 5;
             this.trkSize.TickStyle = System.Windows.Forms.TickStyle.None;
-            this.trkSize.Value = 70;
+            this.trkSize.Value = 100;
             this.trkSize.Scroll += new System.EventHandler(this.trkSize_Scroll);
             // 
             // label2
