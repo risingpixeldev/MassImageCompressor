@@ -30,6 +30,7 @@ namespace NeoFoton
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainUI));
             this.btnRemoveDropped = new System.Windows.Forms.Button();
+            this.btnRemoveAllDropped = new System.Windows.Forms.Button();
             this.lstDroppedItems = new System.Windows.Forms.ListBox();
             this.trkCompress = new System.Windows.Forms.TrackBar();
             this.grpCompress = new System.Windows.Forms.GroupBox();
@@ -94,13 +95,25 @@ namespace NeoFoton
             //
             this.btnRemoveDropped.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRemoveDropped.Enabled = false;
-            this.btnRemoveDropped.Location = new System.Drawing.Point(602, 30);
+            this.btnRemoveDropped.Location = new System.Drawing.Point(602, 68);
             this.btnRemoveDropped.Name = "btnRemoveDropped";
             this.btnRemoveDropped.Size = new System.Drawing.Size(94, 23);
             this.btnRemoveDropped.TabIndex = 2;
             this.btnRemoveDropped.Text = "Remove selected";
             this.btnRemoveDropped.UseVisualStyleBackColor = true;
             this.btnRemoveDropped.Click += new System.EventHandler(this.btnRemoveDropped_Click);
+            //
+            // btnRemoveAllDropped
+            //
+            this.btnRemoveAllDropped.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRemoveAllDropped.Enabled = false;
+            this.btnRemoveAllDropped.Location = new System.Drawing.Point(602, 37);
+            this.btnRemoveAllDropped.Name = "btnRemoveAllDropped";
+            this.btnRemoveAllDropped.Size = new System.Drawing.Size(94, 23);
+            this.btnRemoveAllDropped.TabIndex = 2;
+            this.btnRemoveAllDropped.Text = "Remove all";
+            this.btnRemoveAllDropped.UseVisualStyleBackColor = true;
+            this.btnRemoveAllDropped.Click += new System.EventHandler(this.btnRemoveAllDropped_Click);
             //
             // lstDroppedItems
             //
@@ -114,7 +127,7 @@ namespace NeoFoton
             this.lstDroppedItems.Location = new System.Drawing.Point(6, 19);
             this.lstDroppedItems.Name = "lstDroppedItems";
             this.lstDroppedItems.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.lstDroppedItems.Size = new System.Drawing.Size(590, 41);
+            this.lstDroppedItems.Size = new System.Drawing.Size(590, 87);
             this.lstDroppedItems.TabIndex = 1;
             this.lstDroppedItems.DragDrop += new System.Windows.Forms.DragEventHandler(this.droppedItems_DragDrop);
             this.lstDroppedItems.DragEnter += new System.Windows.Forms.DragEventHandler(this.droppedItems_DragEnter);
@@ -148,7 +161,7 @@ namespace NeoFoton
             this.grpCompress.Controls.Add(this.pnlSizePerc);
             this.grpCompress.Controls.Add(this.label2);
             this.grpCompress.Controls.Add(this.trkCompress);
-            this.grpCompress.Location = new System.Drawing.Point(9, 120);
+            this.grpCompress.Location = new System.Drawing.Point(9, 170);
             this.grpCompress.Name = "grpCompress";
             this.grpCompress.Size = new System.Drawing.Size(702, 114);
             this.grpCompress.TabIndex = 2;
@@ -388,7 +401,7 @@ namespace NeoFoton
             // 
             // btnCompress
             // 
-            this.btnCompress.Location = new System.Drawing.Point(722, 248);
+            this.btnCompress.Location = new System.Drawing.Point(722, 298);
             this.btnCompress.Name = "btnCompress";
             this.btnCompress.Size = new System.Drawing.Size(140, 50);
             this.btnCompress.TabIndex = 5;
@@ -403,9 +416,10 @@ namespace NeoFoton
             this.grpOpen.Controls.Add(this.chkCompressAll);
             this.grpOpen.Controls.Add(this.lstDroppedItems);
             this.grpOpen.Controls.Add(this.btnRemoveDropped);
+            this.grpOpen.Controls.Add(this.btnRemoveAllDropped);
             this.grpOpen.Location = new System.Drawing.Point(9, 4);
             this.grpOpen.Name = "grpOpen";
-            this.grpOpen.Size = new System.Drawing.Size(702, 110);
+            this.grpOpen.Size = new System.Drawing.Size(702, 160);
             this.grpOpen.TabIndex = 1;
             this.grpOpen.TabStop = false;
             this.grpOpen.Text = "Drop image files or folders here";
@@ -414,7 +428,7 @@ namespace NeoFoton
             // 
             this.lblTakeBackup.AutoSize = true;
             this.lblTakeBackup.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblTakeBackup.Location = new System.Drawing.Point(416, 72);
+            this.lblTakeBackup.Location = new System.Drawing.Point(416, 122);
             this.lblTakeBackup.Name = "lblTakeBackup";
             this.lblTakeBackup.Size = new System.Drawing.Size(267, 13);
             this.lblTakeBackup.TabIndex = 4;
@@ -424,7 +438,7 @@ namespace NeoFoton
             // chkCompressAll
             // 
             this.chkCompressAll.AutoSize = true;
-            this.chkCompressAll.Location = new System.Drawing.Point(6, 71);
+            this.chkCompressAll.Location = new System.Drawing.Point(6, 121);
             this.chkCompressAll.Name = "chkCompressAll";
             this.chkCompressAll.Size = new System.Drawing.Size(420, 17);
             this.chkCompressAll.TabIndex = 3;
@@ -437,7 +451,7 @@ namespace NeoFoton
             // 
             this.grpSave.Controls.Add(this.btnSave);
             this.grpSave.Controls.Add(this.txtSave);
-            this.grpSave.Location = new System.Drawing.Point(9, 245);
+            this.grpSave.Location = new System.Drawing.Point(9, 295);
             this.grpSave.Name = "grpSave";
             this.grpSave.Size = new System.Drawing.Size(702, 50);
             this.grpSave.TabIndex = 3;
@@ -515,7 +529,7 @@ namespace NeoFoton
             this.grpPicPreview.Controls.Add(this.btnZoomIn);
             this.grpPicPreview.Controls.Add(this.label3);
             this.grpPicPreview.Controls.Add(this.webBroPicView);
-            this.grpPicPreview.Location = new System.Drawing.Point(9, 304);
+            this.grpPicPreview.Location = new System.Drawing.Point(9, 354);
             this.grpPicPreview.Name = "grpPicPreview";
             this.grpPicPreview.Size = new System.Drawing.Size(859, 329);
             this.grpPicPreview.TabIndex = 10;
@@ -667,7 +681,7 @@ namespace NeoFoton
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(880, 635);
+            this.ClientSize = new System.Drawing.Size(880, 685);
             this.Controls.Add(this.grpCompress);
             this.Controls.Add(this.grpPicPreview);
             this.Controls.Add(this.grpSave);
@@ -705,6 +719,7 @@ namespace NeoFoton
         #endregion
 
         private System.Windows.Forms.Button btnRemoveDropped;
+        private System.Windows.Forms.Button btnRemoveAllDropped;
         private System.Windows.Forms.ListBox lstDroppedItems;
         private System.Windows.Forms.TrackBar trkCompress;
         private System.Windows.Forms.GroupBox grpCompress;

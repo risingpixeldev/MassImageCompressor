@@ -666,6 +666,7 @@ namespace NeoFoton
             }
 
             btnRemoveDropped.Enabled = droppedItems.Count > 0;
+            btnRemoveAllDropped.Enabled = droppedItems.Count > 0;
             UpdateInputPathFromDroppedItems();
         }
 
@@ -678,16 +679,17 @@ namespace NeoFoton
             }
 
             btnRemoveDropped.Enabled = droppedItems.Count > 0;
-            UpdateInputPathFromDroppedItems();
+            btnRemoveAllDropped.Enabled = droppedItems.Count > 0;
+            UpdateDroppedItemsState();
+        }
 
-            if (droppedItems.Count == 0)
-            {
-                opPreviewImages.Clear();
-                compressedImgPath = string.Empty;
-                webBroPicView.DocumentText = string.Empty;
-                label3.Text = string.Empty;
-                txtSave.Text = string.Empty;
-            }
+        private void btnRemoveAllDropped_Click(object sender, EventArgs e)
+        {
+            droppedItems.Clear();
+            lstDroppedItems.Items.Clear();
+            btnRemoveDropped.Enabled = false;
+            btnRemoveAllDropped.Enabled = false;
+            UpdateDroppedItemsState();
         }
 
         private void lstDroppedItems_KeyDown(object sender, KeyEventArgs e)
@@ -703,6 +705,19 @@ namespace NeoFoton
         {
             string firstItem = droppedItems.FirstOrDefault();
             txtOpen.Text = string.IsNullOrEmpty(firstItem) ? string.Empty : (Directory.Exists(firstItem) ? firstItem : Path.GetDirectoryName(firstItem));
+        }
+
+        private void UpdateDroppedItemsState()
+        {
+            UpdateInputPathFromDroppedItems();
+            if (droppedItems.Count != 0)
+                return;
+
+            opPreviewImages.Clear();
+            compressedImgPath = string.Empty;
+            webBroPicView.DocumentText = string.Empty;
+            label3.Text = string.Empty;
+            txtSave.Text = string.Empty;
         }
 
 
