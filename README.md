@@ -20,3 +20,31 @@ MassImageCompressor reduces considerable (>90%) image size by user selected dime
 ## Original source code
 
 This repository is a clone of the latest revision [r26 on SourceForge](https://sourceforge.net/p/icompress/code/HEAD/tree/), created by Yogendrasinh. It may contain in the future small adjustments to it's origin.
+
+## Build on Windows
+
+The application is a classic Windows Forms project targeting **.NET Framework 4.8**. To build it, install Visual Studio 2019 or later with the **.NET desktop development** workload and the **.NET Framework 4.8 targeting pack**.
+
+1. Open `sources\WindowsAndCommon\NeoFoton.sln` in Visual Studio.
+2. Select the `Release` configuration and `Any CPU` platform.
+3. Build the `NeoFoton` project.
+
+Visual Studio may report that `MICompressor` / `ImageCompressor.vdproj` is unsupported. This does not prevent building or running the `NeoFoton` application: it is a separate, optional legacy MSI-installer project. Dismiss the message and build `NeoFoton`, or open `NeoFoton\NeoFoton.csproj` directly to omit the installer project entirely.
+
+The executable and its required image-processing tools are written to:
+
+```
+sources\WindowsAndCommon\NeoFoton\bin\Release\Image Compressor.exe
+```
+
+The same build can be run from a Visual Studio Developer PowerShell:
+
+```powershell
+msbuild sources\WindowsAndCommon\NeoFoton\NeoFoton.csproj /t:Build /p:Configuration=Release /p:Platform=AnyCPU
+```
+
+There are no package-restore steps: all managed references are framework assemblies, and the required native tools (`dcraw`, `jpegtran`, `optipng`, and `pngquant`) are copied from `NeoFoton\Exec` into the output directory during the build.
+
+### Optional MSI installer
+
+The solution also contains the legacy Visual Studio Setup Project at `sources\WindowsAndCommon\ImageCompressor\ImageCompressor.vdproj`. Building it is optional and requires the **Microsoft Visual Studio Installer Projects** extension. Its Release output is `ImageCompressor\Release\MassImageCompressor.msi`.
