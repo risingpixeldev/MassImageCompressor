@@ -53,5 +53,18 @@ namespace NeoFotonCommon
                         View.mimeTypeToSave,
                         progress);
 		}
+
+        public int CompressFiles(List<string> filePaths, ReportProgress progress)
+        {
+            return imgCompressorLogic.CompressFiles(
+                filePaths,
+                View.OutputDirPath,
+                View.QualityCompression,
+                View.FixedHeight,
+                View.ScaleHeight,
+                View.FileSize,
+                View.mimeTypeToSave,
+                progress);
+        }
 	}
 }

@@ -10,6 +10,7 @@ namespace NeoFotonCommon
 
         string GetPreviewImage(List<string> previewedImages, bool? next);
         int CompressDirectory(string dirPath, ReportProgress progress, bool overwrite);
+        int CompressFiles(List<string> filePaths, ReportProgress progress);
 	}
 
     public delegate void ReportProgress(int progress);

@@ -173,6 +173,52 @@ namespace NeoFotonCommon
             return filesToBeCompressed.Count;
         }
 
+        public int CompressFiles(
+            List<string> filePaths,
+            string savePath,
+            int quality,
+            bool fixedHeight,
+            int dimension,
+            decimal fileSize,
+            SupportedMimeType type,
+            ReportProgress progress)
+        {
+            List<string> filesToBeCompressed = filePaths
+                .Where(file => File.Exists(file) && Helper.IsSupportedImage(file) && new FileInfo(file).Length >= fileSize)
+                .ToList();
+
+            if (filesToBeCompressed.Count == 0)
+                return 0;
+
+            if (!Directory.Exists(savePath))
+                Directory.CreateDirectory(savePath);
+
+            int compressed = 0;
+            Forker imageProcessingThreadManager = new Forker();
+            int threadCount = 0;
+
+            foreach (string file in filesToBeCompressed)
+            {
+                string tmpFile = file;
+#if MULTITHREADING
+                imageProcessingThreadManager.Fork(delegate
+                {
+#endif
+                    CompressTask(savePath, quality, fixedHeight, dimension, type, progress, filesToBeCompressed.Count, ref compressed, tmpFile);
+#if MULTITHREADING
+                });
+                threadCount++;
+                if (threadCount == Environment.ProcessorCount)
+                {
+                    threadCount = 0;
+                    imageProcessingThreadManager.Join();
+                }
+#endif
+            }
+            imageProcessingThreadManager.Join();
+            return filesToBeCompressed.Count;
+        }
+
         private void CompressTask(string savePath, int quality, bool fixedHeight, int dimension, SupportedMimeType type, ReportProgress progress, int totalFliesToCompress, ref int compressed, string file)
         {
             //Set file matching extension so 'replace' existing file doesn't duplicate 

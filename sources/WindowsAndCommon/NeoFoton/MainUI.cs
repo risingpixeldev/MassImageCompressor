@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 using System.Net;
+using System.Drawing.Imaging;
 
 namespace NeoFoton
 {
@@ -69,6 +70,8 @@ namespace NeoFoton
         private bool checkFileSize = false;
         private decimal fileSize;
         private bool autoUpdate = true;
+        private readonly List<string> droppedItems = new List<string>();
+        private string checkerboardBackground;
 
 
 
@@ -167,6 +170,12 @@ namespace NeoFoton
             bool isViewGood = true;
             this.Invoke((MethodInvoker)delegate
             {
+                if (droppedItems.Count == 0)
+                {
+                    MessageBox.Show("Drop one or more image files or folders first.", "No items selected", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    isViewGood = false;
+                    return;
+                }
                 this.InputDirPath = txtOpen.Text;
                 this.OutputDirPath = txtSave.Text;
                 this.QualityCompression = trkCompress.Value;
@@ -245,6 +254,7 @@ namespace NeoFoton
         int totalDirectoriesToCompress = 0;
         int totalDirectoryCountCompressing = 0;
         List<string> dirsToCompress;
+        string currentCompressionTarget;
         private void CompressWorker()
         {
             int compressedCout = 0;
@@ -253,18 +263,30 @@ namespace NeoFoton
             {
                 if (SetView())
                 {
-                    dirsToCompress = new List<string>();
-                    if (chkCompressAll.Checked)
-                        dirsToCompress = System.IO.Directory.GetDirectories(InputDirPath, "*", System.IO.SearchOption.AllDirectories).ToList();
-                    dirsToCompress.Add(InputDirPath);
+                    List<string> selectedItems = null;
+                    this.Invoke((MethodInvoker)delegate { selectedItems = droppedItems.ToList(); });
 
-                    totalDirectoriesToCompress = dirsToCompress.Count;
+                    dirsToCompress = selectedItems.Where(Directory.Exists).ToList();
+                    if (chkCompressAll.Checked)
+                        dirsToCompress = dirsToCompress.SelectMany(dir => Directory.GetDirectories(dir, "*", SearchOption.AllDirectories).Concat(new[] { dir })).ToList();
+
+                    List<string> filesToCompress = selectedItems.Where(File.Exists).ToList();
+
+                    totalDirectoriesToCompress = dirsToCompress.Count + (filesToCompress.Count > 0 ? 1 : 0);
                     totalDirectoryCountCompressing = 0;
 
                     foreach (var dir in dirsToCompress)
                     {
                         totalDirectoryCountCompressing++;
-                        compressedCout += this.presenter.CompressDirectory(dir, ProgressUpdate, totalDirectoriesToCompress > 1);
+                        currentCompressionTarget = dir;
+                        compressedCout += this.presenter.CompressDirectory(dir, ProgressUpdate, chkCompressAll.Checked);
+                    }
+
+                    if (filesToCompress.Count > 0)
+                    {
+                        totalDirectoryCountCompressing++;
+                        currentCompressionTarget = "Dropped files";
+                        compressedCout += this.presenter.CompressFiles(filesToCompress, ProgressUpdate);
                     }
 
                     this.Invoke((MethodInvoker)delegate
@@ -318,7 +340,7 @@ namespace NeoFoton
             //{
             if (this.progressDlg.Visible == true)
             {
-                this.progressDlg.UpdateProgressBar(progress, totalDirectoriesToCompress, totalDirectoryCountCompressing, dirsToCompress[totalDirectoryCountCompressing - 1]);
+                this.progressDlg.UpdateProgressBar(progress, totalDirectoriesToCompress, totalDirectoryCountCompressing, currentCompressionTarget);
             }
             else
                 compressWorker.Abort();
@@ -524,7 +546,30 @@ namespace NeoFoton
             long previewImgWidth = compressedImgWidth * zoomLevel / 100;
             long previewImgHeight = compressedImgHeight * zoomLevel / 100;
 
-            return "<body style=\"margin:0px\"><img src=\"" + compressedImgPath + "\" width=" + previewImgWidth.ToString() + " height=" + previewImgHeight.ToString() + "/></body>";
+            return "<body style=\"margin:0px\"><div style=\"width:" + previewImgWidth.ToString() + "px;height:" + previewImgHeight.ToString() + "px;background-image:url(" + GetCheckerboardBackground() + ")\"><img src=\"" + compressedImgPath + "\" width=" + previewImgWidth.ToString() + " height=" + previewImgHeight.ToString() + "/></div></body>";
+        }
+
+        private string GetCheckerboardBackground()
+        {
+            if (!string.IsNullOrEmpty(checkerboardBackground))
+                return checkerboardBackground;
+
+            using (Bitmap checkerboard = new Bitmap(16, 16))
+            using (Graphics graphics = Graphics.FromImage(checkerboard))
+            using (MemoryStream stream = new MemoryStream())
+            {
+                graphics.Clear(Color.FromArgb(190, 190, 190));
+                using (Brush darkGray = new SolidBrush(Color.FromArgb(140, 140, 140)))
+                {
+                    graphics.FillRectangle(darkGray, 0, 0, 8, 8);
+                    graphics.FillRectangle(darkGray, 8, 8, 8, 8);
+                }
+
+                checkerboard.Save(stream, ImageFormat.Png);
+                checkerboardBackground = "data:image/png;base64," + Convert.ToBase64String(stream.ToArray());
+            }
+
+            return checkerboardBackground;
         }
 
         private void rbSizePercentage_CheckedChanged(object sender, EventArgs e)
@@ -599,17 +644,65 @@ namespace NeoFoton
                 });
         }
 
-        private void MainUI_DragEnter(object sender, DragEventArgs e)
+        private void droppedItems_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        }
+
+        private void droppedItems_DragDrop(object sender, DragEventArgs e)
+        {
+            AddDroppedItems((string[])e.Data.GetData(DataFormats.FileDrop));
+        }
+
+        private void AddDroppedItems(IEnumerable<string> paths)
+        {
+            foreach (string path in paths.Where(path => File.Exists(path) || Directory.Exists(path)))
             {
-                var path = ((string[])e.Data.GetData(DataFormats.FileDrop))[0];
-                if (Directory.Exists(path))
-                {
-                    txtOpen.Text = path;
-                    e.Effect = DragDropEffects.Copy;
-                }
+                if (droppedItems.Any(item => string.Equals(item, path, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                droppedItems.Add(path);
+                lstDroppedItems.Items.Add(path);
             }
+
+            btnRemoveDropped.Enabled = droppedItems.Count > 0;
+            UpdateInputPathFromDroppedItems();
+        }
+
+        private void btnRemoveDropped_Click(object sender, EventArgs e)
+        {
+            foreach (string path in lstDroppedItems.SelectedItems.Cast<string>().ToList())
+            {
+                droppedItems.Remove(path);
+                lstDroppedItems.Items.Remove(path);
+            }
+
+            btnRemoveDropped.Enabled = droppedItems.Count > 0;
+            UpdateInputPathFromDroppedItems();
+
+            if (droppedItems.Count == 0)
+            {
+                opPreviewImages.Clear();
+                compressedImgPath = string.Empty;
+                webBroPicView.DocumentText = string.Empty;
+                label3.Text = string.Empty;
+                txtSave.Text = string.Empty;
+            }
+        }
+
+        private void lstDroppedItems_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                btnRemoveDropped_Click(sender, EventArgs.Empty);
+                e.Handled = true;
+            }
+        }
+
+        private void UpdateInputPathFromDroppedItems()
+        {
+            string firstItem = droppedItems.FirstOrDefault();
+            txtOpen.Text = string.IsNullOrEmpty(firstItem) ? string.Empty : (Directory.Exists(firstItem) ? firstItem : Path.GetDirectoryName(firstItem));
         }
 
 
